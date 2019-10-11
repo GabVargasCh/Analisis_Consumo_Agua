@@ -1,0 +1,56 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+Carga de la base
+```{r}
+
+```
+Número de observaciones y tipo de variable
+```{r}
+glimpse(consumo_agua)
+```
+
+Media, medianam cuartiles, max, min 
+```{r}
+summary(consumo_agua)
+```
+Desviación estándar 
+```{r}
+consumo_agua %>% distinct(`Geo Point`)
+```
+Desviación estándar 
+```{r}
+sapply(consumo_agua, sd, na.rm = TRUE)
+```
+
+Desviación estándar 
+```{r}
+map_df(consumo_agua, sd, na.rm=TRUE)
+```
+```{r}
+col<-na.omit(consumo_agua$consumo_prom_dom)
+sd(col)
+```
+
+```{r}
+sum(is.na(col))
+```
+
+```{r}
+ consumo_agua %>%
+  select(everything()) %>%  # replace to your needs
+  summarise_all(funs(sum(is.na(.))))
+```
+
+Transformar a minúsculas
+```{r}
+consumo_agua<-consumo_agua %>% mutate_all(funs(tolower))
+```
+
+
+```{r}
+consumo_agua %>% mutate_all(funs(str_trim))
+```
+

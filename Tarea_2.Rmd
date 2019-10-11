@@ -1,0 +1,143 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+Carga de la base. Jalamos el archivo de la carpeta local debido a que la fuente de datos era demasiado grande para guardarse en nuestro repositorio de Git.
+```{r}
+library(readr)
+library(tidyverse)
+library(stringr)
+consumo_agua<- read_delim("C:/Users/rvarg/Downloads/consumo-agua.csv", 
+    ";", escape_double = FALSE, trim_ws = TRUE)
+View(consumo_agua)
+```
+```{r}
+#consumo_agua_aux<-consumo_agua_aux %>% mutate(latitud=substr(consumo_agua_aux$`Geo Point`))
+#vector<-as.vector(consumo_agua_aux["Geo Point"])
+geo_point_v<-pull(consumo_agua_aux, "Geo Point")
+longitud<-as.double(sub(".*,","",geo_point_v))
+latitud<-as.double(sub(",.*","",geo_point_v))
+consumo_agua<-cbind(latitud,longitud,consumo_agua)
+column_drop<-c("Geo Point", "Geo Shape")
+consumo_agua<-consumo_agua[,!(names(consumo_agua) %in% column_drop)]
+```
+
+Limpieza de datos
+
+Transformar las variables a formato estándar: minúsculas, sin espacios en blanco, sin signos de puntuación.
+
+```{r}
+normalizar_texto <- function(texto, vocab = NULL){
+  texto <- tolower(texto)
+  texto <- str_replace_all(texto,"[[:punct:]]", " ")
+  texto <- gsub("\\s+", "", texto)
+}
+
+#normalizar data frame: Espacios en blanco, expresiones regulares y minúsculas
+normalizar_df<-function(df){
+  colnames(df)<-tolower(colnames(df))
+  for(i in 1:ncol(df)){
+   if(class(df[[i]])=="character") 
+     df[[i]]<-unlist(lapply(df[,i],FUN=normalizar_texto))
+  }
+  df
+}
+
+
+
+
+# consumo_agua_aux<-consumo_agua
+# consumo_agua_aux["alcaldia"]=consumo_agua["anio"]
+# columna<-consumo_agua[,"alcaldia"]
+# vector<-unlist(lapply(columna,FUN=normalizar_texto))
+# consumo_agua_aux[["alcaldia"]]<-vector
+# consumo_agua_aux<-vector
+# which( colnames(consumo_agua_aux)=="alcaldia" )
+# colnames(consumo_agua[2])
+# consumo_agua_aux[[8]]<-vector
+# 
+# for(i in 1:ncol(consumo_agua_aux)){
+#    if(class(consumo_agua_aux[[i]])=="character") 
+#      consumo_agua_aux[[i]]<-unlist(lapply(consumo_agua_aux[,i],FUN=normalizar_texto))
+# }
+
+consumo_agua<-normalizar_df(consumo_agua)
+
+
+#Observaciones en minúsculas
+#consumo_agua<-consumo_agua %>% mutate_all(funs(tolower))
+#eliminación de espacios en blanco
+#consumo_agua<-as.data.frame(apply(consumo_agua,2,function(x)gsub('\\s+', '',x)))
+#eliminación de signos de puntuación
+#consumo_agua_aux<-str_replace_all(consumo_agua, "[[:punct:]]", " ")
+#consumo_agua_aux<-mutate_all(funs(str_replace_all(consumo_agua_aux,"[[:punct:]]", " ")))
+```
+Data Profiling
+
+Número de observaciones y tipo de variable
+```{r}
+glimpse(consumo_agua)
+clases_de_variables<-map_df(consumo_agua,class)
+clases_de_variables<-unlist(transpose(clases_de_variables))
+clases_unicas<-unique(clases_de_variables)
+count <- function(x, n){
+  tib<-tibble(tipo=character(),cantidad=numeric())
+  for(i in 1:length(n)){
+    num<-length((which(x == n[i])))
+    tib<-add_row(tib,tipo=n[i],cantidad=num)
+  }
+  tib
+}
+count(clases_de_variables,clases_unicas)
+
+#length(which(clases_de_variables==clases_unicas[3]))
+```
+```{r}
+glimpse(consumo_agua)
+```
+
+EDA Variables numéricas
+
+Media, mediana cuartiles, max, min 
+```{r}
+variables_numericas<-which(clases_de_variables%in%c("numeric","integer"))
+variables_numericas<-names(clases_de_variables[variables_numericas])
+consumo_agua_numericas<-consumo_agua %>% select(variables_numericas)
+resumen_numericas<-summary(consumo_agua_numericas)
+resumen_numericas
+```
+Desviación estándar 
+```{r}
+consumo_agua %>% distinct(`Geo Point`)
+```
+Desviación estándar 
+```{r}
+sapply(consumo_agua, sd, na.rm = TRUE)
+```
+
+Desviación estándar 
+```{r}
+map_df(consumo_agua, sd, na.rm=TRUE)
+```
+```{r}
+col<-na.omit(consumo_agua$consumo_prom_dom)
+sd(col)
+```
+
+```{r}
+sum(is.na(col))
+```
+
+```{r}
+ consumo_agua %>%
+  select(everything()) %>%  
+  summarise_all(funs(sum(is.na(.))))
+```
+
+
+
+```{r}
+consumo_agua %>% mutate_all(funs(str_trim))
+```
+

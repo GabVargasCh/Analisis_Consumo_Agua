@@ -1,0 +1,32 @@
+---
+title: "Ejercicio Titanic"
+author: "Gabriela Vargas"
+date: "1 de octubre de 2019"
+output: html_document
+---
+
+Carga de librerías
+
+```{r}
+library(readr)
+```
+
+Carga de la base
+
+```{r}
+titanic <- read_csv("C:/Users/rvarg/Downloads/titanic.csv")
+```
+
+Convertir nombres de variables y datos a lowe case
+
+```{r}
+titanic<- titanic %>% mutate_all(funs(tolower))
+var.names<-tolower(colnames(titanic))
+colnames(titanic)<-var.names
+```
+
+```{r}
+install.packages("vcd")
+library(vcd)
+doubledecker(survived ~ sex + pclass, data = titanic)
+```
