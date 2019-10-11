@@ -105,7 +105,11 @@ variables_numericas<-which(clases_de_variables%in%c("numeric","integer"))
 variables_numericas<-names(clases_de_variables[variables_numericas])
 consumo_agua_numericas<-consumo_agua %>% select(variables_numericas)
 resumen_numericas<-summary(consumo_agua_numericas)
-resumen_numericas
+data_profiling_numericas<-data.frame(matrix(ncol = length(variables_numericas), nrow = 11))
+colnames(data_profiling_numericas) <- variables_numericas
+row.names(data_profiling_numericas)<-c("tipo_dato","# obs","Media","Desv_st","Cuartiles","Max","Min","Obs_unicas","Top_5_rep","NA's","Redondeos")
+#function append_tipo(dfr,)
+
 ```
 Desviación estándar 
 ```{r}
